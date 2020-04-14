@@ -44,6 +44,8 @@ std::vector<float>          * localdirx_  = nullptr;
 std::vector<float>          * localdiry_  = nullptr;
 std::vector<float>          * localdirz_  = nullptr;
 std::vector<float>          * variance_   = nullptr;
+std::vector<float>          * localx_     = nullptr;
+std::vector<float>          * rhlocalx_   = nullptr;
 
 // track data
 std::vector<float>        * trackpt_        = nullptr;

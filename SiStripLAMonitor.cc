@@ -87,6 +87,13 @@ int Init(int argc, char * argv[])
             h1_[Form("%s_variance_w2" ,locationtype.c_str())]  = new TH1F (Form("%s_variance_w2",locationtype.c_str()),     "", 100,0,1);
             h1_[Form("%s_variance_w3" ,locationtype.c_str())]  = new TH1F (Form("%s_variance_w3",locationtype.c_str()),     "", 100,0,1);
             
+            // local_x
+            h1_[Form("%s_localx"       ,locationtype.c_str())]  = new TH1F (Form("%s_localx",locationtype.c_str()),     "", 200,-6,6);
+            h1_[Form("%s_rhlocalx"     ,locationtype.c_str())]  = new TH1F (Form("%s_rhlocalx",locationtype.c_str()),     "", 200,-6,6);
+            h1_[Form("%s_shift"        ,locationtype.c_str())]  = new TH1F (Form("%s_shift",locationtype.c_str()),     "", 200,-0.7,0.7);
+            h2_[Form("%s_shift_tanthetatrk_minus_tanthetaLA",locationtype.c_str())] = new TH2F (Form("%s_shift_tanthetatrk_minus_tanthetaLA",locationtype.c_str()), "", 400, -0.001, 0.001, 360, -0.9, 0.9);
+            
+
             h2_[Form("%s_tanthcosphtrk_nstrip",locationtype.c_str())] = new TH2F (Form("%s_tanthcosphtrk_nstrip",locationtype.c_str()), "", 360, -0.9, 0.9, 20, 0, 20);
             h2_[Form("%s_thetatrk_nstrip",locationtype.c_str())]      = new TH2F (Form("%s_thetatrk_nstrip",locationtype.c_str())     , "", 360, -0.9, 0.9, 20, 0, 20);
             h2_[Form("%s_tanthcosphtrk_var2",locationtype.c_str())]   = new TH2F (Form("%s_tanthcosphtrk_var2",locationtype.c_str())  , "", 360, -0.9, 0.9, 50, 0,  1);
@@ -131,7 +138,7 @@ void ProcessTheEvent()
       if ( chi2ndfmax_ > 0 && trackchi2ndof_->at(itrk) >= chi2ndfmax_ ) continue;
       if ( chi2ndfmin_ > 0 && trackchi2ndof_->at(itrk) < chi2ndfmin_ ) continue;
       
-//      std::cout << trk_done[itrk] << std::endl;
+      // std::cout << trk_done[itrk] << std::endl;
       if ( ! trk_done[itrk] )
       {
          h1_["track_pt"]          -> Fill(trackpt_->at(itrk));
@@ -165,6 +172,10 @@ void ProcessTheModule(const unsigned int & i)
    if ( locationtype == "" ) return;
    
    la_[locationtype] = la_db_[mod];
+   // std::cout << "locationtype: " << locationtype << std::endl;
+   // std::cout << "mod: " << mod << std::endl;
+   // std::cout << "la_db_ mod: " << la_db_[mod] << std::endl;
+   
    
    TVector3 localdir(localdirx_->at(i),localdiry_->at(i),localdirz_->at(i));
    int sign = orientation_[mod];
@@ -179,6 +190,11 @@ void ProcessTheModule(const unsigned int & i)
    h1_[Form("%s_tanthetatrk",locationtype.c_str())] -> Fill(sign*tantheta);
    h1_[Form("%s_cosphitrk"  ,locationtype.c_str())] -> Fill(cosphi);
    
+   // localx and rhlocalx 
+   h1_[Form("%s_localx"      ,locationtype.c_str())] -> Fill(localx_->at(i));
+   h1_[Form("%s_rhlocalx"    ,locationtype.c_str())] -> Fill(rhlocalx_->at(i));
+   h1_[Form("%s_shift"       ,locationtype.c_str())] -> Fill(localx_->at(i) - rhlocalx_->at(i));
+   h2_[Form("%s_shift_tanthetatrk_minus_tanthetaLA",locationtype.c_str())] -> Fill(localx_->at(i) - rhlocalx_->at(i),sign*tantheta-0.);
    // nstrips
    h2_[Form("%s_tanthcosphtrk_nstrip",locationtype.c_str())] -> Fill(sign*cosphi*tantheta,nstrips);
    h2_[Form("%s_thetatrk_nstrip",locationtype.c_str())]      -> Fill(sign*theta*cosphi,nstrips);
@@ -219,15 +235,23 @@ void ProcessTheModule(const unsigned int & i)
 
 void AnalyzeTheTree()
 {
+   std::cout << "test 0" << std::endl;
    int count_entries = 0;
    bool terminate = false;
    fs::path calibtree_path(calibTreeDir_);
+   std::cout << "path: " << calibtree_path << std::endl;
+   std::cout << run_ << std::endl;
+   std::cout << nentriesmax_ << std::endl;
    if ( fs::exists(calibtree_path) )
    {
+      std::cout << "test 1" << std::endl;
       if ( fs::is_directory(calibtree_path) )
       {
+         std::cout << "test 2" << std::endl;
          for (fs::directory_entry& ls_file : fs::directory_iterator(calibtree_path)) // LOOP on RUNS!!!
          {
+            std::cout << "test 3" << std::endl;
+
             std::string fileprefix = Form("calibTree_%d",run_);
             std::string filename = ls_file.path().filename().string();
             if ( filename.find(fileprefix) == std::string::npos || filename.find(".root") == std::string::npos ) continue;
@@ -375,6 +399,9 @@ void CalibTreeBranches(TTree * tree)
    tree -> SetBranchAddress((calibPrefix_ + "localdiry"  + calibSuffix_).c_str(), &localdiry_  );
    tree -> SetBranchAddress((calibPrefix_ + "localdirz"  + calibSuffix_).c_str(), &localdirz_  );
    tree -> SetBranchAddress((calibPrefix_ + "variance"   + calibSuffix_).c_str(), &variance_   );
+
+   tree -> SetBranchAddress((calibPrefix_ + "localx"     + calibSuffix_).c_str(), &localx_     );
+   tree -> SetBranchAddress((calibPrefix_ + "rhlocalx"   + calibSuffix_).c_str(), &rhlocalx_   );
 
    // track data
    tree -> SetBranchAddress((trackPrefix_ + "trackpt"        + trackSuffix_).c_str(), &trackpt_        );
