@@ -18,6 +18,91 @@ namespace fs = boost::filesystem;
 #include "TVector3.h"
 #include "TString.h"
 
+#include <sstream>
+#include <string>
+#include <vector>
+
+void read_record(int ID) 
+{ 
+  
+   std::ifstream infile("SiStripLA_157866.csv"); 
+  
+   std::string line;
+   while (std::getline(infile, line))
+   {
+      std::istringstream iss(line);
+   
+      std::string str = line;
+      std::vector<std::string> vect;
+
+    std::stringstream ss(str);
+
+   while( ss.good() )
+   {
+    std::string substr;
+    getline( ss, substr, ',' );
+    vect.push_back( substr );
+   }
+
+
+   //  for (int i; ss >> i;) {
+   //      vect.push_back(i);    
+   //      if (ss.peek() == ',')
+   //          ss.ignore();
+   //  }
+    for (std::size_t i = 0; i < vect.size(); i++)
+        std::cout << vect[i] << std::endl;
+   exit(0);
+   if ((int)vect[0] == ID) {
+       for (std::size_t i = 0; i < vect.size(); i++)
+        std::cout << vect[i] << std::endl;
+   }
+
+   }
+   //  // Read the Data from the file 
+   //  // as String Vector 
+   //  vector<string> row; 
+   //  string line, word, temp; 
+  
+   //  while (fin >> temp) { 
+  
+   //      row.clear(); 
+  
+   //      // read an entire row and 
+   //      // store it in a string variable 'line' 
+   //      std::getline(fin, line); 
+
+        
+
+   //      // used for breaking words 
+   //      std::stringstream s(line); 
+   //      std::cout << line << std::endl;
+   //      exit(0);
+  
+      //   // read every column data of a row and 
+      //   // store it in a string variable, 'word' 
+      //   while (std::getline(s, word, ', ')) { 
+  
+      //       // add all the column data 
+      //       // of a row to a vector 
+      //       row.push_back(word); 
+      //   } 
+  
+      //   // convert string to integer for comparision 
+      //   roll2 = stoi(row[0]); 
+  
+      //   // Compare the roll number 
+      //   if (roll2 == ID) { 
+  
+      //       std::cout << "Details of Roll " << row[0] << " : \n"; 
+      //       std::cout << "Details of Roll " << row[1] << " : \n"; 
+      //       count++;
+      //   } 
+   //  } 
+   //  if (count == 0) 
+   //      std::cout << "Record not found\n"; 
+} 
+
 // =============================================================================================   
 
 int main(int argc, char * argv[])
@@ -27,6 +112,10 @@ int main(int argc, char * argv[])
       std::cout << "*** SiStripLAMonitor ***: -errors- Please check your configuration file" << std::endl;
       return -1;
    }
+
+   read_record(369142366);
+   exit(0);
+
    AnalyzeTheTree();
    WriteOutputs(saveHistos_);
    
@@ -88,10 +177,17 @@ int Init(int argc, char * argv[])
             h1_[Form("%s_variance_w3" ,locationtype.c_str())]  = new TH1F (Form("%s_variance_w3",locationtype.c_str()),     "", 100,0,1);
             
             // local_x
-            h1_[Form("%s_localx"       ,locationtype.c_str())]  = new TH1F (Form("%s_localx",locationtype.c_str()),     "", 200,-6,6);
-            h1_[Form("%s_rhlocalx"     ,locationtype.c_str())]  = new TH1F (Form("%s_rhlocalx",locationtype.c_str()),     "", 200,-6,6);
-            h1_[Form("%s_shift"        ,locationtype.c_str())]  = new TH1F (Form("%s_shift",locationtype.c_str()),     "", 200,-0.7,0.7);
-            h2_[Form("%s_shift_tanthetatrk_minus_tanthetaLA",locationtype.c_str())] = new TH2F (Form("%s_shift_tanthetatrk_minus_tanthetaLA",locationtype.c_str()), "", 400, -0.001, 0.001, 360, -0.9, 0.9);
+            h1_[Form("%s_localx_vplus"       ,locationtype.c_str())]  = new TH1F (Form("%s_localx_vplus",locationtype.c_str()),     "", 200,-6,6);
+            h1_[Form("%s_rhlocalx_vplus"     ,locationtype.c_str())]  = new TH1F (Form("%s_rhlocalx_vplus",locationtype.c_str()),     "", 200,-6,6);
+            h1_[Form("%s_shift_vplus"        ,locationtype.c_str())]  = new TH1F (Form("%s_shift_vplus",locationtype.c_str()),     "", 200,-0.05,0.05);
+            h2_[Form("%s_shift_tanthetatrk_minus_tanthetaLA_vplus",locationtype.c_str())] = new TH2F (Form("%s_shift_tanthetatrk_minus_tanthetaLA_vplus",locationtype.c_str()), "",12, -0.5, 0.5, 400, -0.01, 0.01);
+            h2_[Form("%s_clusterwidth_tanthetatrk_minus_tanthetaLA_vplus",locationtype.c_str())] = new TH2F (Form("%s_clusterwidth_tanthetatrk_minus_tanthetaLA_vplus",locationtype.c_str()), "",12, -0.5, 0.5, 11, 0, 10);
+            
+            h1_[Form("%s_localx_vminus"       ,locationtype.c_str())]  = new TH1F (Form("%s_localx_vminus",locationtype.c_str()),     "", 200,-6,6);
+            h1_[Form("%s_rhlocalx_vminus"     ,locationtype.c_str())]  = new TH1F (Form("%s_rhlocalx_vminus",locationtype.c_str()),     "", 200,-6,6);
+            h1_[Form("%s_shift_vminus"        ,locationtype.c_str())]  = new TH1F (Form("%s_shift_vminus",locationtype.c_str()),     "", 200,-0.05,0.05);
+            h2_[Form("%s_shift_tanthetatrk_minus_tanthetaLA_vminus",locationtype.c_str())] = new TH2F (Form("%s_shift_tanthetatrk_minus_tanthetaLA_vminus",locationtype.c_str()), "",12, -0.5, 0.5, 400, -0.01, 0.01);
+            h2_[Form("%s_clusterwidth_tanthetatrk_minus_tanthetaLA_vminus",locationtype.c_str())] = new TH2F (Form("%s_clusterwidth_tanthetatrk_minus_tanthetaLA_vminus",locationtype.c_str()), "",12, -0.5, 0.5, 11, 0, 10);
             
 
             h2_[Form("%s_tanthcosphtrk_nstrip",locationtype.c_str())] = new TH2F (Form("%s_tanthcosphtrk_nstrip",locationtype.c_str()), "", 360, -0.9, 0.9, 20, 0, 20);
@@ -158,6 +254,7 @@ void ProcessTheEvent()
       
 //      if ( fabs(tracketa_->at(itrk)) > 0.2 ) continue;
       // process info
+      // std::cout << "tracketa: " << tracketa_->at(itrk) << std::endl;
       ProcessTheModule(i);
    }
    
@@ -169,32 +266,60 @@ void ProcessTheModule(const unsigned int & i)
    unsigned int mod = rawid_->at(i);
    std::string locationtype = ModuleLocationType(mod);
    
+   std::cout << "mod: " << mod << std::endl;
+
    if ( locationtype == "" ) return;
    
    la_[locationtype] = la_db_[mod];
    // std::cout << "locationtype: " << locationtype << std::endl;
    // std::cout << "mod: " << mod << std::endl;
    // std::cout << "la_db_ mod: " << la_db_[mod] << std::endl;
-   
+   // std::cout << "magnetic field: " << infolocalb_->at(0) << std::endl;
    
    TVector3 localdir(localdirx_->at(i),localdiry_->at(i),localdirz_->at(i));
    int sign = orientation_[mod];
    float tantheta = TMath::Tan(localdir.Theta());
    float cosphi   = TMath::Cos(localdir.Phi());
    float theta    = localdir.Theta();
+
+   // std::cout << "x: " << localdirx_->at(i) << std::endl;
+   // std::cout << "y: " << localdiry_->at(i) << std::endl;
+   // std::cout << "z: " << localdirz_->at(i) << std::endl;
+   // std::cout << "theta: " << theta << std::endl;
+   
    
    unsigned short nstrips  = nstrips_->at(i);
    float variance = variance_->at(i);
+
+   // std::cout << "nstrips: " << nstrips << std::endl;
    
    h1_[Form("%s_nstrips"    ,locationtype.c_str())] -> Fill(nstrips);
    h1_[Form("%s_tanthetatrk",locationtype.c_str())] -> Fill(sign*tantheta);
    h1_[Form("%s_cosphitrk"  ,locationtype.c_str())] -> Fill(cosphi);
    
-   // localx and rhlocalx 
-   h1_[Form("%s_localx"      ,locationtype.c_str())] -> Fill(localx_->at(i));
-   h1_[Form("%s_rhlocalx"    ,locationtype.c_str())] -> Fill(rhlocalx_->at(i));
-   h1_[Form("%s_shift"       ,locationtype.c_str())] -> Fill(localx_->at(i) - rhlocalx_->at(i));
-   h2_[Form("%s_shift_tanthetatrk_minus_tanthetaLA",locationtype.c_str())] -> Fill(localx_->at(i) - rhlocalx_->at(i),sign*tantheta-0.);
+   // addition for backplane correction: localx and rhlocalx 
+   float tanLA_used = -1;
+   if (infolocalb_->at(0) > 0.1) { // non-zero magnetic field --> use LA from data base
+      // multiply LA from data base by B-field.
+      tanLA_used = TMath::Tan(la_db_[mod] * infolocalb_->at(0));
+   }
+   else { // zero magnetic field --> LA = 0
+      tanLA_used = TMath::Tan(0.0);
+   }
+   if (sign >= 0) {
+      h1_[Form("%s_localx_vplus"    ,locationtype.c_str())] -> Fill(localx_->at(i));
+      h1_[Form("%s_rhlocalx_vplus"    ,locationtype.c_str())] -> Fill(rhlocalx_->at(i));
+      h1_[Form("%s_shift_vplus"       ,locationtype.c_str())] -> Fill(localx_->at(i) - rhlocalx_->at(i));
+      h2_[Form("%s_shift_tanthetatrk_minus_tanthetaLA_vplus",locationtype.c_str())] -> Fill(sign*(tantheta-tanLA_used),localx_->at(i) - rhlocalx_->at(i));
+      h2_[Form("%s_clusterwidth_tanthetatrk_minus_tanthetaLA_vplus",locationtype.c_str())] -> Fill(sign*(tantheta-tanLA_used),nstrips);
+   }
+   else {
+      h1_[Form("%s_localx_vminus"    ,locationtype.c_str())] -> Fill(localx_->at(i));
+      h1_[Form("%s_rhlocalx_vminus"    ,locationtype.c_str())] -> Fill(rhlocalx_->at(i));
+      h1_[Form("%s_shift_vminus"       ,locationtype.c_str())] -> Fill(localx_->at(i) - rhlocalx_->at(i));
+      h2_[Form("%s_shift_tanthetatrk_minus_tanthetaLA_vminus",locationtype.c_str())] -> Fill(sign*(tantheta-tanLA_used),localx_->at(i) - rhlocalx_->at(i)); 
+      h2_[Form("%s_clusterwidth_tanthetatrk_minus_tanthetaLA_vminus",locationtype.c_str())] -> Fill(sign*(tantheta-tanLA_used),nstrips);
+   }
    // nstrips
    h2_[Form("%s_tanthcosphtrk_nstrip",locationtype.c_str())] -> Fill(sign*cosphi*tantheta,nstrips);
    h2_[Form("%s_thetatrk_nstrip",locationtype.c_str())]      -> Fill(sign*theta*cosphi,nstrips);
@@ -235,23 +360,21 @@ void ProcessTheModule(const unsigned int & i)
 
 void AnalyzeTheTree()
 {
-   std::cout << "test 0" << std::endl;
+   // std::cout << "test 0" << std::endl;
    int count_entries = 0;
    bool terminate = false;
    fs::path calibtree_path(calibTreeDir_);
    std::cout << "path: " << calibtree_path << std::endl;
    std::cout << run_ << std::endl;
    std::cout << nentriesmax_ << std::endl;
+
    if ( fs::exists(calibtree_path) )
    {
-      std::cout << "test 1" << std::endl;
       if ( fs::is_directory(calibtree_path) )
       {
-         std::cout << "test 2" << std::endl;
          for (fs::directory_entry& ls_file : fs::directory_iterator(calibtree_path)) // LOOP on RUNS!!!
          {
-            std::cout << "test 3" << std::endl;
-
+      
             std::string fileprefix = Form("calibTree_%d",run_);
             std::string filename = ls_file.path().filename().string();
             if ( filename.find(fileprefix) == std::string::npos || filename.find(".root") == std::string::npos ) continue;
