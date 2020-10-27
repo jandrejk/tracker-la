@@ -24,5 +24,5 @@ for CalibTree in CalibTrees :
             exit(0)
     
     w = csv.writer(open("{}.csv".format(outputFileName), "w"))
-    for key, val in dict.items():
+    for key, val in RunIDmodes.items():
         w.writerow([key, val])
