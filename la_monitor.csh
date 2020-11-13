@@ -75,9 +75,9 @@ foreach f ( $files )
       set current_run = $run
    endif
    
-#   if ( $run == "322670" || $run == "323002" ) then
-#      continue
-#   endif
+   if ( $run == "318517" || $run == "318519" || $run == "318520" || $run == "318521"  ) then
+      continue
+   endif
    set command = "SiStripLAMonitor -c $cfg -r $run" 
    set condor_dir = "$anadir/Condor_SiStripLAMonitor/job_run"$run
    if ( -d $condor_dir ) then
