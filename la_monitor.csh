@@ -5,13 +5,18 @@ if ( $#argv < 1 ) then
    exit
 endif
 
-set os = "6"
-if ( $#argv == 2 ) then
- set os = $2
-endif
+# set os = "6"
+# if ( $#argv == 2 ) then
+#  set os = $2
+# endif
+
+
 
 set cfg = $1
 set rootdir = `cat $cfg | grep -v '#' | grep "CalibTreeDirectory" | awk -F "=" '{print $2}'`
+if ( $#argv == 2 ) then
+   set rootdir = $2
+endif
 set datatype = `basename $rootdir`
 set basedir = `dirname $rootdir`
 set baseanadir = `echo $basedir | awk -F "calibTrees" '{print $2}'`
@@ -75,10 +80,13 @@ foreach f ( $files )
       set current_run = $run
    endif
    
-   if ( $run == "318517" || $run == "318519" || $run == "318520" || $run == "318521"  ) then
+   if ( $run == "318517" || $run == "318519" || $run == "318520" || $run == "318521" || $run == "302442" || $run == "320268" ||  $run == "320381") then
       continue
    endif
    set command = "SiStripLAMonitor -c $cfg -r $run" 
+   if ( $#argv == 2 ) then
+      set command = "SiStripLAMonitor -c $cfg -r $run -d $rootdir"
+   endif
    set condor_dir = "$anadir/Condor_SiStripLAMonitor/job_run"$run
    if ( -d $condor_dir ) then
       echo "Skipping run $run. Directory $condor_dir already exists ..." 
