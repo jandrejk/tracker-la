@@ -51,6 +51,7 @@ int SiStripLAMonitorConfig(int argc, char * argv[])
       desc.add_options()
          ("help,h","Show help messages")
          ("config,c",po::value<std::string>(&cfg_),"Configuration file name")
+         ("tree_dir,d",po::value<std::string>(&calibTreeDir_),"Direcotry of the calibTree files")
          ("run,r",po::value<int>(&run_),"Run number");
       
       po::options_description config("Configuration");
