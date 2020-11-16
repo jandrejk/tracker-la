@@ -21,6 +21,11 @@ void InfoTreeBranches(TTree *);
 std::string ModuleLocationType(const unsigned int &);
 // void MeasureLorentzAngle(std::string method);
 
+// number of events
+int nevents_;
+
+// B field
+std::string bfield_;
 
 // la info tree
 std::vector<unsigned int> * inforawid_               = nullptr;

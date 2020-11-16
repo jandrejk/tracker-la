@@ -83,6 +83,7 @@ int main(int argc, char * argv[])
    
    std::ofstream finished;
    finished.open("finished.txt");
+   finished << "run events:" << run_ << "," << nevents_ << "\n";
    finished << "SiStripLAMonitor finished!" << "\n";
    finished.close();
    
@@ -178,8 +179,10 @@ void ProcessTheEvent(std::map<int, double> LA_dict)
          break;
       }
       
-      if ( ptmin_ > 0 && infolocalb_->at(0) > 1. && trackpt_->at(itrk) < ptmin_ ) continue; // if NO Bfield don't perform any pt selection 
-      if ( ptmax_ > 0 && infolocalb_->at(0) > 1. && trackpt_->at(itrk) >= ptmax_ ) continue; // if NO Bfield don't perform any pt selection
+//      if ( ptmin_ > 0 && infolocalb_->at(0) > 1. && trackpt_->at(itrk) < ptmin_ ) continue; // if NO Bfield don't perform any pt selection 
+//      if ( ptmax_ > 0 && infolocalb_->at(0) > 1. && trackpt_->at(itrk) >= ptmax_ ) continue; // if NO Bfield don't perform any pt selection
+      if ( ptmin_ > 0 && bfield_ == "4T" && trackpt_->at(itrk) < ptmin_ ) continue; // if NO Bfield don't perform any pt selection 
+      if ( ptmax_ > 0 && bfield_ == "4T" && trackpt_->at(itrk) >= ptmax_ ) continue; // if NO Bfield don't perform any pt selection
       if ( tracketa_->at(itrk) < etamin_ ) continue;
       if ( tracketa_->at(itrk) >= etamax_ ) continue;
       if ( hitsvalmin_ > 0 && int(trackhitsvalid_->at(itrk)) < hitsvalmin_ ) continue;
@@ -352,15 +355,23 @@ void AnalyzeTheTree(std::map<int, double> LA_dict)
             }
             // CALIB TREE
             std::string tree_path = Form("gainCalibrationTree%s/tree",calibrationMode_.c_str());
-            if ( infolocalb_->at(0) < 0.1 ) tree_path = Form("gainCalibrationTree%s0T/tree",calibrationMode_.c_str());
             TTree * tree = (TTree*) f->Get(tree_path.c_str());
+            bfield_ = "4T";
+            if ( tree -> GetEntries() == 0 )
+            {
+               tree_path = Form("gainCalibrationTree%s0T/tree",calibrationMode_.c_str());
+               tree = (TTree*) f->Get(tree_path.c_str());
+               bfield_ = "0T";
+            }
+//            if ( infolocalb_->at(0) < 0.1 ) tree_path = Form("gainCalibrationTree%s0T/tree",calibrationMode_.c_str());
+//            TTree * tree = (TTree*) f->Get(tree_path.c_str());
             CalibTreeBranches(tree);
             
             // LOOP on EVENTS!!!
             unsigned int nentries = tree->GetEntries();
             for (unsigned int ientry = 0; ientry < nentries; ientry++)
             {
-               ++count_entries;
+//               ++count_entries;
 //               if ( count_entries%100 == 0 ) std::cout << "Processed " << count_entries << "..." << std::endl;
                if ( nentriesmax_ > 0 && count_entries > nentriesmax_ )
                {
@@ -369,13 +380,14 @@ void AnalyzeTheTree(std::map<int, double> LA_dict)
                }
                tree->GetEntry(ientry);
                ProcessTheEvent(LA_dict);
+               ++count_entries;
             } // end of events loop
             if ( terminate ) break;
                      
          } // end of file list loop
       }
    }
-   
+   nevents_ = count_entries;
    
 }
 
@@ -383,10 +395,11 @@ void WriteOutputs(const bool & savehistos)
 {
    if ( ! savehistos ) return;
    // add the run number to the output file(s)
-   if ( infolocalb_->at(0) < 0.1 )
-      outputfile_ = std::regex_replace( outputfile_, std::regex(".root"), Form("_0T_%d.root",run_) );
-   else
-      outputfile_ = std::regex_replace( outputfile_, std::regex(".root"), Form("_4T_%d.root",run_) );
+   outputfile_ = std::regex_replace( outputfile_, std::regex(".root"), Form("_%s_%d.root",bfield_.c_str(),run_) );
+//    if ( infolocalb_->at(0) < 0.1 )
+//       outputfile_ = std::regex_replace( outputfile_, std::regex(".root"), Form("_0T_%d.root",run_) );
+//    else
+//       outputfile_ = std::regex_replace( outputfile_, std::regex(".root"), Form("_4T_%d.root",run_) );
 
    TFile out(outputfile_.c_str(),"RECREATE");
    for ( auto h : h1_ )
