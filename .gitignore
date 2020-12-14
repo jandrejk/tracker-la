@@ -1,0 +1,6 @@
+preprocessed_*
+BP_plots*
+._*.py
+._*.sh
+Cosmics*
+*.pyc
