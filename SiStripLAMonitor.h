@@ -10,9 +10,9 @@
 #include "TProfile.h"
 
 int Init(int argc, char * argv[]);
-void AnalyzeTheTree();
-void ProcessTheEvent();
-void ProcessTheModule(const unsigned int &);
+void AnalyzeTheTree(std::map<int, double> LA_dict);
+void ProcessTheEvent(std::map<int, double> LA_dict);
+void ProcessTheModule(const unsigned int &, std::map<int, double> LA_dict);
 void WriteOutputs(const bool & savehistos = true);
 void WriteOutputsModules(TFile &, TH2F *);
 

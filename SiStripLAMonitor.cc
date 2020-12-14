@@ -22,86 +22,42 @@ namespace fs = boost::filesystem;
 #include <string>
 #include <vector>
 
-void read_record(int ID) 
-{ 
-  
-   std::ifstream infile("SiStripLA_157866.csv"); 
-  
-   std::string line;
-   while (std::getline(infile, line))
-   {
-      std::istringstream iss(line);
+std::map<int, double> processList(std::string path){
+
    
-      std::string str = line;
-      std::vector<std::string> vect;
 
-    std::stringstream ss(str);
+   std::map<int, double> LA_dict;
 
-   while( ss.good() )
-   {
-    std::string substr;
-    getline( ss, substr, ',' );
-    vect.push_back( substr );
+   if (path.empty()) {
+      return LA_dict;
+   } 
+
+   std::ifstream openFile(path);
+
+   std::string keyString;
+   std::string valueString;
+   
+   int counter = 0;
+   while(true)
+   {  
+         
+         if (!std::getline(openFile, keyString, ',')) {
+            std::cout<<"csv file loaded"<<std::endl;
+            break;
+         }
+         // std::cout<<"keyString: "<<keyString<<std::endl;
+         std::getline(openFile, valueString, '\n');
+         auto key = std::stoi(keyString);
+         auto value = std::stod(valueString);
+         LA_dict[key] = value;
+         counter++;
+         // if (counter == 10) {
+         //    break;
+         // }
    }
-
-
-   //  for (int i; ss >> i;) {
-   //      vect.push_back(i);    
-   //      if (ss.peek() == ',')
-   //          ss.ignore();
-   //  }
-    for (std::size_t i = 0; i < vect.size(); i++)
-        std::cout << vect[i] << std::endl;
-   exit(0);
-   if ((int)vect[0] == ID) {
-       for (std::size_t i = 0; i < vect.size(); i++)
-        std::cout << vect[i] << std::endl;
-   }
-
-   }
-   //  // Read the Data from the file 
-   //  // as String Vector 
-   //  vector<string> row; 
-   //  string line, word, temp; 
-  
-   //  while (fin >> temp) { 
-  
-   //      row.clear(); 
-  
-   //      // read an entire row and 
-   //      // store it in a string variable 'line' 
-   //      std::getline(fin, line); 
-
-        
-
-   //      // used for breaking words 
-   //      std::stringstream s(line); 
-   //      std::cout << line << std::endl;
-   //      exit(0);
-  
-      //   // read every column data of a row and 
-      //   // store it in a string variable, 'word' 
-      //   while (std::getline(s, word, ', ')) { 
-  
-      //       // add all the column data 
-      //       // of a row to a vector 
-      //       row.push_back(word); 
-      //   } 
-  
-      //   // convert string to integer for comparision 
-      //   roll2 = stoi(row[0]); 
-  
-      //   // Compare the roll number 
-      //   if (roll2 == ID) { 
-  
-      //       std::cout << "Details of Roll " << row[0] << " : \n"; 
-      //       std::cout << "Details of Roll " << row[1] << " : \n"; 
-      //       count++;
-      //   } 
-   //  } 
-   //  if (count == 0) 
-   //      std::cout << "Record not found\n"; 
-} 
+   std::cout<<"no of entries in csv file: "<<counter<<std::endl;
+   return LA_dict;
+}
 
 // =============================================================================================   
 
@@ -112,11 +68,8 @@ int main(int argc, char * argv[])
       std::cout << "*** SiStripLAMonitor ***: -errors- Please check your configuration file" << std::endl;
       return -1;
    }
-
-   read_record(369142366);
-   exit(0);
-
-   AnalyzeTheTree();
+   std::map<int, double> LA_dict = processList(LA_csv_file_);
+   AnalyzeTheTree(LA_dict);
    WriteOutputs(saveHistos_);
    
    std::cout << "-----" << std::endl;
@@ -207,7 +160,7 @@ int Init(int argc, char * argv[])
 }
 
 
-void ProcessTheEvent()
+void ProcessTheEvent(std::map<int, double> LA_dict)
 {
    
    bool trk_done[1000] = { false };
@@ -255,19 +208,19 @@ void ProcessTheEvent()
 //      if ( fabs(tracketa_->at(itrk)) > 0.2 ) continue;
       // process info
       // std::cout << "tracketa: " << tracketa_->at(itrk) << std::endl;
-      ProcessTheModule(i);
+      ProcessTheModule(i, LA_dict);
    }
    
 }
 
 
-void ProcessTheModule(const unsigned int & i)
+void ProcessTheModule(const unsigned int & i, std::map<int, double> LA_dict)
 {
+   // std::map<int, double> LA_dict = processList(LA_csv_file_);
+   
    unsigned int mod = rawid_->at(i);
    std::string locationtype = ModuleLocationType(mod);
    
-   std::cout << "mod: " << mod << std::endl;
-
    if ( locationtype == "" ) return;
    
    la_[locationtype] = la_db_[mod];
@@ -301,7 +254,14 @@ void ProcessTheModule(const unsigned int & i)
    float tanLA_used = -1;
    if (infolocalb_->at(0) > 0.1) { // non-zero magnetic field --> use LA from data base
       // multiply LA from data base by B-field.
-      tanLA_used = TMath::Tan(la_db_[mod] * infolocalb_->at(0));
+      // std::cout << "module ID: " << mod << std::endl;
+      // std::cout << "corresponding LA: " << LA_dict[mod] << std::endl;
+      if (LA_dict.empty()) { // use LA from DB
+         tanLA_used = TMath::Tan(la_db_[mod] * infolocalb_->at(0));
+      }
+      else { // use LA from csv file
+         tanLA_used = TMath::Tan(LA_dict[mod] * infolocalb_->at(0));
+      }
    }
    else { // zero magnetic field --> LA = 0
       tanLA_used = TMath::Tan(0.0);
@@ -358,7 +318,7 @@ void ProcessTheModule(const unsigned int & i)
    
 }
 
-void AnalyzeTheTree()
+void AnalyzeTheTree(std::map<int, double> LA_dict)
 {
    // std::cout << "test 0" << std::endl;
    int count_entries = 0;
@@ -408,7 +368,7 @@ void AnalyzeTheTree()
                   break;
                }
                tree->GetEntry(ientry);
-               ProcessTheEvent();
+               ProcessTheEvent(LA_dict);
             } // end of events loop
             if ( terminate ) break;
                      

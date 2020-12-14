@@ -30,6 +30,7 @@ std::string trackPrefix_;
 std::string trackSuffix_;
 std::string calibPrefix_;
 std::string calibSuffix_;
+std::string LA_csv_file_;
 
 float etamin_;
 float etamax_;
@@ -39,6 +40,7 @@ int   hitsvalmin_;
 int   hitsvalmax_;
 float chi2ndfmax_;
 float chi2ndfmin_;
+
 
 int SiStripLAMonitorConfig(int argc, char * argv[])
 {
@@ -71,6 +73,7 @@ int SiStripLAMonitorConfig(int argc, char * argv[])
          ("TrackSuffix",po::value <std::string> (&trackSuffix_)->default_value(""),"Track suffix")
          ("CalibPrefix",po::value <std::string> (&calibPrefix_)->default_value("GainCalibration"),"Calibration prefix")
          ("CalibSuffix",po::value <std::string> (&calibSuffix_)->default_value(""),"Calibration suffix")
+         ("LA_csv_file",po::value <std::string> (&LA_csv_file_)->default_value(""),"csv file storing Lorentz angles")
          ("ptMin",po::value <float> (&ptmin_)->default_value(-1), "Min track pT")
          ("ptMax",po::value <float> (&ptmax_)->default_value(-1), "Max track pT")
          ("etaMin",po::value <float> (&etamin_)->default_value(-10), "Min track eta")
